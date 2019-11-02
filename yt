@@ -1,0 +1,43 @@
+local component = require("component")
+local internet = require("internet")
+
+-- this depends on https://github.com/rxi/json.lua/blob/master/json.lua
+local json = require("json")
+
+function handle_request(str)
+	-- get resonse from server
+	local response  = internet.request("https://stroemer.cc/projects/mcyt/search.php", {query = str, private="ljKn#a2"})
+
+	-- extract page source code
+	local body = ""
+	for chunk in response do
+	  body = body .. chunk
+	end
+
+	-- convert JSON string to table
+	local data = json.decode(body)
+
+	-- print table
+	print("I've found:")
+	for i,v in pairs(data) do
+		print("(" .. i .. ") " .. v["title"])
+	end
+	
+	-- get user choice
+	print("\nPlease choose a number: ")
+	local choice = tonumber(io.read())
+	while type(choice) ~= "number" or choice < 1 or choice > 10 do
+		print("Please choose a valid number (1-10): ")
+		choice = tonumber(io.read())
+	end
+	
+	-- return the correct link
+	return data[choice]["url"]
+end
+
+-- get search from user
+print("Search: ")
+local search = io.read()
+
+-- convert search to link
+print("Loading song from: " .. handle_request(search))
